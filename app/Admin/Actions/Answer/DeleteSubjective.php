@@ -20,10 +20,10 @@ class DeleteSubjective extends RowAction
         ];
 
         if ($model instanceof SubjectiveAnswer) {
-//            var_dump($model);
+            // 删除答案的同时更新总成绩和主观题成绩
             try {
                 $del_score = $model->score+0;
-                $score = StudentScore::where('username', $model->username)->where('paper_id', $model->paper_id)->first();
+                $score = StudentScore::findorFail($model->score_id);
                 $score->subjective_score -= $del_score;
                 $score->score -= $del_score;
                 $res = $score->save();

@@ -173,7 +173,7 @@ class SubjectiveAnswerController extends AdminController
             $show->field('updated_at', __('更新时间'));
             $show->panel()->tools(function ($tools) {
 //            $tools->disableEdit();
-//                $tools->disableList();
+//            $tools->disableList();
                 $tools->disableDelete();
             });
         });
@@ -244,19 +244,13 @@ class SubjectiveAnswerController extends AdminController
                 foreach (array_diff($questions, $answers) as $value) {
                     $sort_arr[$value] = $value;
                 }
-            } else {
-                // 统一在学生答案处新增
-//                $form->select('username', __('学号'))->options($stu_arr)->required();
-//                $form->select('paper_id', __('套卷'))->options($paper_arr)->required();
             }
-//            $form->hasMany('subjective', __('主观题'), function (Form\NestedForm $form) {
-                $form->select('sort', __('题序'))->options($sort_arr)->required();
-                $form->textarea('answer', __('答案'))->required();
-                $form->text('score', __('得分'))->help('是否开启自动评分不影响人工修改得分，最终以人工修改的得分为结果');
-//            });
+            $form->select('sort', __('题序'))->options($sort_arr)->required();
+            $form->textarea('answer', __('答案'))->required();
+            $form->text('score', __('得分'))->help('是否开启自动评分不影响人工修改得分，最终以人工修改的得分为结果');
             $form->tools(function (Form\Tools $tools) use ($score_id) {
                 $list = '/admin/answer/subjective';
-                $back = "/admin/answer/".$score_id;
+                $back = "/admin/answer/" . $score_id;
                 $tools->add("<a href='{$list}' class='btn btn-sm btn-default' style='float: right; margin-right: 5px;'><i class='fa fa-list'></i>&nbsp;列表</a>");
                 $tools->add("<a href='{$back}' class='btn btn-sm btn-default' style='float: right; margin-right: 5px;'><i class='fa fa-list'></i>&nbsp;返回</a>");
             });
@@ -305,7 +299,7 @@ class SubjectiveAnswerController extends AdminController
                     $stu->save();
                     $success_msg = "编辑成功";
                 } else {
-                    // 新增
+                    // 新增（入口为学生答案的主观题列表）
                     $info_arr = $this->getScore($input, $time);
                     if (!empty($info_arr['info'])) {
                         DB::table('subjective_answer')->insert($info_arr['info']);

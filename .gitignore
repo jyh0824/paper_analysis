@@ -2,6 +2,10 @@
 /public/hot
 /public/storage
 /public/auto_score/answer_log
+/public/auto_score/doc2vec/*
+!/public/auto_score/doc2vec/page_sim.py
+/public/auto_score/word2vec/*
+!/public/auto_score/word2vec/page_sim.py
 /storage/*.key
 /vendor
 .env

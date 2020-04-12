@@ -3,13 +3,16 @@
 namespace App\Admin\Actions\Feedback;
 
 use Encore\Admin\Actions\RowAction;
+use Illuminate\Http\Request;
 
 class FeedbackRemark extends RowAction
 {
+    public $name = '修改备注';
+
     public function form()
     {
         // 备注输入框
-        $this->text('remark','备注');
+        $this->text('remark','备注')->help('将覆盖原有备注');
     }
 
     public function handle(\App\Feedback $feedback, Request $request)
@@ -22,11 +25,5 @@ class FeedbackRemark extends RowAction
         $feedback->save();
 
         return $this->response()->success('备注完成')->refresh();
-    }
-
-    // 这个方法来根据`status`字段的值来在这一列显示不同的图标
-    public function display($status)
-    {
-        return $status ? "<i class=\"fa fa-check\" style='color: darkgreen;'></i>已处理" : "<i class=\"fa fa-times\" style='color: darkred;'></i>未处理";
     }
 }
