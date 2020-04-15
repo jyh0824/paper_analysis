@@ -425,8 +425,10 @@ class AnswerController extends AdminController
         fclose($studentf);
 
         // 注意修改文件读、写、执行权限
+        ob_start();
         $word_sim = system('python ./auto_score/word2vec/page_sim.py '.$file_a.' '.$file_b);
         $doc_sim = system('python ./auto_score/doc2vec/page_sim.py '.$file_a.' '.$file_b);
+        ob_clean();
 
         // doc2vec 占更高权重 (最佳值待确定)
         $res = round($doc_sim * 0.6 + $word_sim * 0.4, 2);

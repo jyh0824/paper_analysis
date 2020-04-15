@@ -84,9 +84,10 @@ if __name__ == '__main__':
     model = gensim.models.Word2Vec.load('./auto_score/word2vec/dataset.word2vec')
     p1 = './auto_score/answer_log/'+argv[1]
     p2 = './auto_score/answer_log/'+argv[2]
-    with open('./auto_score/word2vec/dataset_all_list.txt', 'r') as f:
-        content = f.read()
-        doc_list = json.loads(content, encoding='utf-8')
+    # with open('./auto_score/word2vec/dataset_all_list.txt', 'r') as f:
+    #     content = f.read()
+    #     doc_list = json.loads(content, encoding='utf-8')
+    doc_list = ''
     p1_keywords = './auto_score/answer_log/'+argv[1][:-4]+'_keywords.txt'
     p2_keywords = './auto_score/answer_log/'+argv[2][:-4]+'_keywords.txt'
     if os.path.isfile(p1_keywords) == False:
