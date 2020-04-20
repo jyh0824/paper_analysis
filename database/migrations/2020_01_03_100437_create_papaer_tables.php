@@ -31,11 +31,12 @@ class CreatePapaerTables extends Migration
             $table->string('option2')->comment('B');
             $table->string('option3')->comment('C');
             $table->string('option4')->comment('D');
-            $table->string('answer', 20)->comment('答案');
+            $table->text('answer')->comment('答案');
             $table->text('analysis')->nullable()->comment('解析');
-            $table->string('point')->comment('得分点（顿号分隔）')->nullable();
             $table->string('score',11)->comment('分值');
-            $table->integer('sort')->comment('排序值');
+            $table->string('sort')->comment('排序值');
+            $table->integer('is_auto')->comment('是否开启自动评分 1-开启，2-关闭');
+            $table->integer('model')->comment('1-关键词模式，2-相似度模式');
             $table->timestamps();
         });
         // 题型表
@@ -49,11 +50,12 @@ class CreatePapaerTables extends Migration
             $table->increments('id');
             $table->string('username')->comment('学号');
             $table->unsignedInteger('paper_id')->comment('试卷id');
-            $table->integer('question_type')->comment('题目序号');
-            $table->string('answer')->comment('答案');
-            $table->integer('score')->comment('得分');
-            $table->string('remark', 255)->comment('备注');
             $table->unsignedInteger('score_id')->comment('成绩id');
+            $table->string('sort')->comment('题目序号');
+            $table->text('answer')->comment('答案');
+            $table->string('score')->comment('得分');
+            $table->string('auto_score')->comment('自动评分得分');
+            $table->string('remark', 255)->comment('备注');
             $table->timestamps();
         });
         // 学生成绩表
@@ -61,22 +63,22 @@ class CreatePapaerTables extends Migration
             $table->increments('id');
             $table->string('username')->comment('学号');
             $table->unsignedInteger('paper_id')->comment('试卷id');
-            $table->integer('score')->comment('成绩');
+            $table->string('score')->comment('成绩');
             $table->string('remark', 255)->comment('备注');
             $table->string('selection_answer', 255)->comment('选择题答案');
-            $table->integer('selection_score')->comment('选择题分数');
+            $table->string('selection_score')->comment('选择题分数');
             $table->string('judgement_answer', 255)->comment('判断题答案');
-            $table->integer('judgement_score')->comment('判断题分数');
-            $table->integer('subjective_score')->comment('主观题分数');
+            $table->string('judgement_score')->comment('判断题分数');
+            $table->string('subjective_score')->comment('主观题分数');
             $table->timestamps();
         });
         // 用户反馈表
         Schema::create('feedback', function (Blueprint $table) {
             $table->increments('id');
-            $table->unsignedInteger('user_id')->comment('用户id');
+            $table->unsignedInteger('uid')->comment('用户id');
             $table->string('content', 255)->comment('内容');
             $table->string('remark', 255)->comment('反馈回复');
-            $table->integer('state')->comment('状态');
+            $table->integer('status')->comment('状态');
             $table->timestamps();
         });
     }
