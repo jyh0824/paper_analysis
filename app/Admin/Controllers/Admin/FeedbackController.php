@@ -46,16 +46,16 @@ class FeedbackController extends AdminController
     {
         $grid = new Grid(new Feedback);
 
-        $grid->column('id', __('ID'));
+        $grid->column('id', __('ID'))->sortable();
         $grid->column('uid', __('反馈用户'))->display(function ($uid) {
             $user = AdminUser::find($uid);
             return $user->name;
-        });
+        })->sortable();
         $grid->column('content', __('反馈内容'));
-        $grid->column('status', __('状态'))->action(\App\Admin\Actions\Feedback\Feedback::class);
+        $grid->column('status', __('状态'))->action(\App\Admin\Actions\Feedback\Feedback::class)->sortable();
         $grid->column('remark', __('处理备注'));
-        $grid->column('created_at', __('创建时间'));
-        $grid->column('updated_at', __('更新时间'));
+        $grid->column('created_at', __('创建时间'))->sortable();
+        $grid->column('updated_at', __('更新时间'))->sortable();
 
         // 禁用导出键
         $grid->disableExport();

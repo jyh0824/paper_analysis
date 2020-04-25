@@ -86,12 +86,12 @@ class SelectionController extends AdminController
     {
         $grid = new Grid(new Selection);
 
-        $grid->column('id', __('ID'));
+        $grid->column('id', __('ID'))->sortable();
         $grid->column('paper_id', __('套卷'))->display(function ($paper_id) {
             $paper = Paper::find($paper_id);
             return $paper_id.'-'.$paper->classname . '-' . $paper->year;
-        });
-        $grid->column('sort', __('题序'));
+        })->sortable();
+        $grid->column('sort', __('题序'))->sortable();
         $grid->column('title', __('题目描述'));
         $grid->column('answer', __('答案'));
         $grid->column('score', __('分值'));

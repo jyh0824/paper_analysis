@@ -5,7 +5,7 @@
         var data = eval(<?php echo json_encode($rate); ?>);
         var labels = new Array();
         var datas = new Array();
-        if (!data.judgement_score) {
+        if (typeof(data.judgement_score) == 'undefined') {
             labels[0] = '选择题';
             labels[1] = '主观题';
             datas[0] = data.selection_score;

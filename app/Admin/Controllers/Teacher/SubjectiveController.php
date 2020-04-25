@@ -3,7 +3,9 @@
 namespace App\Admin\Controllers\Teacher;
 
 use App\Paper;
+use App\StudentScore;
 use App\Subjective;
+use App\SubjectiveAnswer;
 use Encore\Admin\Controllers\AdminController;
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
@@ -179,7 +181,7 @@ class SubjectiveController extends AdminController
             $form->select('paper_id', __('套卷'))->options($paper_arr)->value($question->paper_id)->disable();
             $form->text('sort', __('题序'))->value($question->sort)->required();
             $form->text('title', __('题目描述'))->value($question->title)->required();
-            $form->select('is_auto', __('是否开启主观题自动评分'))->options([1 => '是', 2 => '否'])->hideField1('model')->value($question->is_auto)->required();
+            $form->select('is_auto', __('是否开启主观题自动评分'))->options([1 => '是', 2 => '否'])->hideField('model')->value($question->is_auto)->required();
             $form->select('model', __('评分模式'))->options([1 => '关键词评分', 2 => '相似度评分'])->value($question->model == null ? 1 : $question->model)->help('关键词评分: 需给定关键词及分值<br>相似度评分: 需给定完整参考答案')->attribute('name', 'model')->required();
             $form->textarea('answer', __('答案'))->value($question->answer)->help('开启自动评分的<b style="color: darkred;">关键词评分</b>模式时，需使用<b style="color: darkred;">英文括号</b>将关键词分数标出，<b style="color: darkred;">顿号</b>分隔，答案格式如：<b style="color: darkred;">关键词1(5)、关键词2(3)</b><br>其余情况请填写完整参考答案')->required();
             $form->text('score', __('分值'))->value($question->score)->required();
@@ -197,7 +199,7 @@ class SubjectiveController extends AdminController
             $form->hasMany('self', __('主观题'), function (Form\NestedForm $form) {
                 $form->text('sort', __('题序'))->required();
                 $form->text('title', __('题目描述'))->required();
-                $form->select('is_auto', __('是否开启主观题自动评分'))->options([1 => '是', 2 => '否'])->default(1)->hideField('model')->required();
+                $form->select('is_auto', __('是否开启主观题自动评分'))->options([1 => '是', 2 => '否'])->default(1)->hideField1('model')->required();
                 $form->select('model', __('评分模式'))->options([1 => '关键词评分', 2 => '相似度评分'])->default(1)->help('关键词评分: 需给定关键词及分值<br>相似度评分: 需给定完整参考答案')->attribute('name', 'model')->required();
                 $form->textarea('answer', __('答案'))->help('开启自动评分的<b style="color: darkred;">关键词评分</b>模式时，需使用<b style="color: darkred;">英文括号</b>将关键词分数标出，<b style="color: darkred;">顿号</b>分隔，答案格式如：<b style="color: darkred;">关键词1(5)、关键词2(3)</b><br>其余情况请填写完整参考答案');
                 $form->text('score', __('分值'));
@@ -228,9 +230,16 @@ class SubjectiveController extends AdminController
                 $info->sort = $input['sort'];
                 $info->title = $input['title'];
                 $info->is_auto = $input['is_auto'] + 0;
-                $info->model = $input['is_auto'] == 1 ? $input['model'] + 0 : null;
-                $info->answer = $input['answer'];
-                $info->score = $input['score'];
+                $info->model = $info->is_auto == 1 ? $input['model'] + 0 : null;
+                if ($info->answer != $input['answer']) {
+                    // 修改答案，更新原有学生答案的自动评分分数
+                    $info->answer = $input['answer'];
+                    $score = $info->score != ($input['score']+0) ? $input['score']+0 : $info->score;
+                    if ($info->model != null) {
+                        $this->updateAutoScore($id, $input['answer'], $score, $info->model);
+                    }
+                }
+                $info->score = $input['score']+0;
                 $res = $info->save();
                 if ($res) {
                     return admin_toastr('修改成功', 'success', ['timeOut' => 2000]);
@@ -275,8 +284,81 @@ class SubjectiveController extends AdminController
         }
     }
 
-    public function delete($id)
+    // 更新自动评分分数
+    public function updateAutoScore($id, $answer, $score, $model)
     {
+        $sub = Subjective::find($id);
+        $stu_answers = SubjectiveAnswer::where('paper_id', $sub->paper_id)->where('sort', $sub->sort)->get();
+        DB::beginTransaction();
+        try {
+            foreach ($stu_answers as $stu) {
+                $auto_score = 0;
+                if ($model == 1) {
+                    // 关键词评分模式
+                    $auto_score = $this->getKeyScore($answer, $stu->answer);
+                } else {
+                    // 相似度评分模式
+                    $sim = $this->getSim($answer, $stu->answer, $stu->paper_id.'_'.$stu->sort, substr($stu->username, -4));
+                    $auto_score = round(($score + 0) * $sim, 2);
+                }
+                $old_score = $stu->score;
+                $stu->score = ($stu->auto_score == $stu->score ? $auto_score : $stu->score);
+                $new_score = $stu->score;
+                $stu->save();
+                $stu->auto_score = $auto_score;
+                $stu_score = StudentScore::find($stu->score_id);
+                $stu_score->subjective_score += ($new_score-$old_score);
+                $stu_score->score += ($new_score-$old_score);
+                $stu_score->save();
+            }
+            DB::commit();
+        } catch (\Illuminate\Database\QueryException $ex) {
+            DB::rollBack();
+            admin_toastr("操作失败：" . $ex, 'error');
+        }
+    }
 
+    // 获取相似度比较结果
+    public function getSim($answer, $stu_answer, $prefix, $username)
+    {
+        $file_a = $prefix.'.txt';
+        $file_b = $prefix.'_'.$username.'.txt';
+        // 保存答案及分词结果（用于查看测试情况）
+        if (!file_exists('./auto_score/answer_log/'.$file_a)) {
+            $criterion = fopen('./auto_score/answer_log/'.$file_a, 'w');
+            fwrite($criterion, $answer);
+            fclose($criterion);
+        }
+        $studentf = fopen('./auto_score/answer_log/'.$file_b, 'w');
+        fwrite($studentf, $stu_answer);
+        fclose($studentf);
+
+        // 注意修改文件读、写、执行权限
+        ob_start();
+        $word_sim = system('python ./auto_score/word2vec/page_sim.py '.$file_a.' '.$file_b);
+        $doc_sim = system('python ./auto_score/doc2vec/page_sim.py '.$file_a.' '.$file_b);
+        ob_clean();
+
+        // doc2vec 占更高权重 (最佳值待确定)
+        $res = round($doc_sim * 0.6 + $word_sim * 0.4, 2);
+
+        return $res;
+    }
+
+    // 获取关键词评分结果
+    public function getKeyScore($answer, $stu_answer)
+    {
+        // 处理关键词及对应分值
+        $keyPoint = explode('、', $answer);
+        $totalScore = 0;
+        foreach ($keyPoint as $key) {
+            $pos = strpos($key, '(');
+            $word = substr($key, 0, $pos);
+            $score = substr($key, $pos+1, -1);
+            if (strpos($stu_answer, $word) !== false) {
+                $totalScore += $score+0;
+            }
+        }
+        return $totalScore;
     }
 }

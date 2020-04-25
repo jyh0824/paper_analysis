@@ -36,6 +36,9 @@ class PaperController extends AdminController
     // 得分率
     public $rate = null;
 
+    // 题型得分
+    public $content = null;
+
     // 学生成绩
     public $student_score = null;
 
@@ -101,7 +104,7 @@ class PaperController extends AdminController
     protected function analysis($id, Content $content)
     {
         $this->paper_id = $id;
-        $questions = Question::where('paper_id', $id)->orderBy('type', 'asc')->orderBy('sort', 'asc')->get()->toArray();
+        $questions = Question::where('paper_id', $id)->orderBy('type', 'asc')->orderByRaw("LPAD(sort,'0',10) asc")->get()->toArray();  // orderby时>10的排在2前面，因为sort是字符型，'10'<'2'，字符左填充0可解决
         $this->questions = $questions;
 
         $content->header('成绩分析');
@@ -114,31 +117,33 @@ class PaperController extends AdminController
             // 成绩分析
             $row->column(6, function (Column $column) {
                 $sql = "type, sum(score) as score";
-                $full_score = DB::table('question')->select(DB::raw($sql))->where('paper_id', $this->paper_id)->groupBy('type')->get();
+                $full_score = DB::table('question')->select(DB::raw($sql))->where('paper_id', $this->paper_id)->orderBy('type', 'asc')->groupBy('type')->pluck('score', 'type');
                 $this->student_score = $student_score = StudentScore::where('username', Admin::user()->username)->where('paper_id', $this->paper_id)->first(['score','selection_score','judgement_score','subjective_score'])->toArray();
                 // 没有判断题
-                if (!$full_score[1]->score) {
-                    $content = "<lable style='font-size: 18px; font-weight: bold'>选择题得分：" . $student_score['selection_score'] . "</lable><br>
-                                <lable style='font-size: 18px; font-weight: bold'>主观题得分：" . $student_score['subjective_score'] . "</lable><br>";
+                $judge = Question::where('paper_id', $this->paper_id)->where('type', 2)->value('id');
+                if ($judge) {
+                    $content = "<lable style='font-size: 18px; font-weight: bold'>选择题得分：".$student_score['selection_score']."</lable>
+                                <lable style='font-size: 18px; font-weight: bold; margin-left: 30px;'>判断题得分：".($student_score['judgement_score']+0)."</lable>
+                                <lable style='font-size: 18px; font-weight: bold; margin-left: 30px;'>主观题得分：".($student_score['subjective_score']+0)."</lable>";
                     $rate = [
-                        'selection_score' => $student_score['selection_score']/$full_score[0]->score*100,
-                        'subjective_score' => $student_score['subjective_score']/$full_score[2]->score*100,
+                        'selection_score' => $student_score['selection_score']/$full_score[1]*100,
+                        'judgement_score' => $student_score['judgement_score']/$full_score[2]*100,
+                        'subjective_score' => $student_score['subjective_score']/$full_score[3]*100,
                     ];
                 } else {
-                    $content = "<lable style='font-size: 18px; font-weight: bold'>选择题得分：".$student_score['selection_score']."</lable><br>
-                                <lable style='font-size: 18px; font-weight: bold'>判断题得分：".$student_score['judgement_score']."</lable><br>
-                                <lable style='font-size: 18px; font-weight: bold'>主观题得分：".$student_score['subjective_score']."</lable><br>";
+                    $content = "<lable style='font-size: 18px; font-weight: bold'>选择题得分：" . $student_score['selection_score'] . "</lable>
+                                <lable style='font-size: 18px; font-weight: bold; margin-left: 30px;'>主观题得分：" . ($student_score['subjective_score']+0) . "</lable>";
                     $rate = [
-                        'selection_score' => $student_score['selection_score']/$full_score[0]->score*100,
-                        'judgement_score' => $student_score['judgement_score']/$full_score[1]->score*100,
-                        'subjective_score' => $student_score['subjective_score']/$full_score[2]->score*100,
+                        'selection_score' => $student_score['selection_score']/$full_score[1]*100,
+                        'subjective_score' => $student_score['subjective_score']/$full_score[3]*100,
                     ];
                 }
                 $this->rate = $rate;
+                $this->content = $content;
 
                 $column->row(function (Row $row) {
                     $box = new Box('各题型得分率', view('admin.student.rate')->with('rate', $this->rate));
-                    $box->footer("<div style='font-size: 18px; font-weight: bold;'><label>总分：{$this->student_score['score']}</label></div>");
+                    $box->footer("<div style='font-size: 18px; font-weight: bold;'>{$this->content}<label style='float: right;'>总分：{$this->student_score['score']}</label></div>");
                     $row->column(6, $box);
 
                     $score = StudentScore::select('id','score','selection_score','judgement_score','subjective_score')->where('paper_id', $this->paper_id)->get();
@@ -209,8 +214,13 @@ class PaperController extends AdminController
                     switch ($question['type']) {
                         // 选择题
                         case 1:
-                            $your_answer = $answers['selection_answer'][$question['sort']-1];
-                            $color = $answers['selection_answer'][$question['sort']-1] == $question['answer'] ? 'darkgreen' : 'darkred';
+                            if (empty($answers['selection_answer'])) {
+                                $your_answer = '暂无';
+                                $color = 'black';
+                            } else {
+                                $your_answer = isset($answers['selection_answer'][$question['sort'] - 1]) ? $answers['selection_answer'][$question['sort'] - 1] : '无';
+                                $color = isset($answers['selection_answer'][$question['sort'] - 1]) ? ($answers['selection_answer'][$question['sort'] - 1] == $question['answer'] ? 'darkgreen' : 'darkred') : 'black';
+                            }
                             $selection .= "<div style='font-size: 20px; margin-left: 20px;'>
                                                 <label>".$question['sort'].".&nbsp&nbsp".$question['title']."（".$question['score']."分）</label><br>
                                                 A.&nbsp&nbsp".$question['option1']."<br>
@@ -223,9 +233,14 @@ class PaperController extends AdminController
                             break;
                         // 判断题
                         case 2:
-                            $your_answer = $answers['judgement_answer'][$question['sort']-1] == 1 ? '√' : '×';
+                            if (empty($answers['judgement_answer'])) {
+                                $your_answer = '暂无';
+                                $color = 'black';
+                            } else {
+                                $your_answer = isset($answers['judgement_answer'][$question['sort'] - 1]) ? ($answers['judgement_answer'][$question['sort'] - 1] == 1 ? '√' : '×') : '无';
+                                $color = isset($answers['judgement_answer'][$question['sort'] - 1]) ? ($answers['judgement_answer'][$question['sort'] - 1] == $question['answer'] ? 'darkgreen' : 'darkred') : 'black';
+                            }
                             $right = $question['answer'] == 1 ? '√' : '×';
-                            $color = $answers['judgement_answer'][$question['sort']-1] == $question['answer'] ? 'darkgreen' : 'darkred';
                             $judgement .= "<div style='font-size: 20px; margin-left: 20px;'>
                                                 <label>".$question['sort'].". ".$question['title']."（".$question['score']."分）</label><br><br>
                                                 正确答案：&nbsp&nbsp<label style='color: darkgreen; font-weight: bold;'>".$right."</label><br>
@@ -234,18 +249,28 @@ class PaperController extends AdminController
                             break;
                         // 主观题
                         case 3:
+                            if (empty($subjective_answer)) {
+                                $your_answer = '暂无';
+                                $score = 0;
+                            } else {
+                                $your_answer = isset($subjective_answer[$question['sort'] - 1]['answer']) ? $subjective_answer[$question['sort'] - 1]['answer'] : '无';
+                                $score = isset($subjective_answer[$question['sort'] - 1]['score']) ? $subjective_answer[$question['sort'] - 1]['score'] : 0;
+                            }
                             $subjective .= "<div style='font-size: 20px; margin-left: 20px;'>
                                                 <label>".$question['sort'].". ".$question['title']."（".$question['score']."分）</label><br><br>
                                                 参考答案：&nbsp&nbsp<label font-weight: bold;'>".$question['answer']."</label><br>
-                                                你的答案：&nbsp&nbsp<label>".$subjective_answer[$question['sort']-1]['answer']."</label><br>
-                                                得分：&nbsp&nbsp".$subjective_answer[$question['sort']-1]['score']."
+                                                你的答案：&nbsp&nbsp<label>".$your_answer."</label><br>
+                                                得分：&nbsp&nbsp".$score."
                                            </div><br><br>";
                             break;
                     }
                 }
-                $selection .= !empty($selection) ? "<label style='font-size: 21px; margin-left: 20px;'>选择题成绩：{$this->student_score['selection_score']}</label><br>" : "";
-                $judgement .= !empty($judgement) ? "<label style='font-size: 21px; margin-left: 20px;'>判断题成绩：{$this->student_score['judgement_score']}</label><br>" : "";
-                $subjective .= !empty($subjective) ? "<label style='font-size: 21px; margin-left: 20px;'>主观题成绩：{$this->student_score['subjective_score']}</label><br>" : "";
+                $selection_score = $this->student_score['selection_score'] == null ? 0 : $this->student_score['selection_score'];
+                $judgement_score = $this->student_score['judgement_score'] == null ? 0 : $this->student_score['judgement_score'];
+                $subjective_score = $this->student_score['subjective_score'] == null ? 0 : $this->student_score['subjective_score'];
+                $selection .= !empty($selection) ? "<label style='font-size: 21px; margin-left: 20px;'>选择题成绩：{$selection_score}</label><br>" : "";
+                $judgement .= !empty($judgement) ? "<label style='font-size: 21px; margin-left: 20px;'>判断题成绩：{$judgement_score}</label><br>" : "";
+                $subjective .= !empty($subjective) ? "<label style='font-size: 21px; margin-left: 20px;'>主观题成绩：{$subjective_score}</label><br>" : "";
                 $tab = new Tab();
                 $tab->add('选择题', $selection);
                 $tab->add('判断题', $judgement);

@@ -86,12 +86,12 @@ class JudgementController extends AdminController
     {
         $grid = new Grid(new Judgement);
 
-        $grid->column('id', __('ID'));
+        $grid->column('id', __('ID'))->sortable();
         $grid->column('paper_id', __('套卷'))->display(function ($paper_id) {
             $paper = Paper::find($paper_id);
             return $paper_id.'-'.$paper->classname.'-'.$paper->year;
-        })->width(400);
-        $grid->column('sort', __('题序'));
+        })->width(400)->sortable();
+        $grid->column('sort', __('题序'))->sortable();
         $grid->column('title', __('题目描述'));
         $grid->column('answer', __('答案'))->display(function ($answer) {
             $res = '';

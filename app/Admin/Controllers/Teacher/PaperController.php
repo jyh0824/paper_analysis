@@ -97,8 +97,8 @@ class PaperController extends AdminController
             $name = AdminUser::where('id', '=', $uid)->first(['name']);
             return $name->name;
         });
-        $grid->column('created_at', __('创建时间'));
-        $grid->column('updated_at', __('更新时间'));
+        $grid->column('created_at', __('创建时间'))->sortable();
+        $grid->column('updated_at', __('更新时间'))->sortable();
 
         // 禁用导出键
         $grid->disableExport();
@@ -256,7 +256,7 @@ class PaperController extends AdminController
         $form->hasMany('subjective', __('主观题'), function (Form\NestedForm $form) {
             $form->text('sort', __('序号'))->required();
             $form->text('title', __('题目描述'))->required();
-            $form->select('is_auto', __('是否开启主观题自动评分'))->options([1 => '是', 2 => '否'])->default(1)->hideField('model')->required();
+            $form->select('is_auto', __('是否开启主观题自动评分'))->options([1 => '是', 2 => '否'])->default(1)->hideField1('model')->required();
             $form->select('model', __('评分模式'))->options([1 => '关键词评分', 2 => '相似度评分'])->default(1)->help('关键词评分: 需给定关键词及分值<br>相似度评分: 需给定完整参考答案')->attribute('name', 'model')->required();
 //            $form->text('point', __('得分点（得分点关键字后英文括号中写入关键点分值，例：关键字1(3)、关键字2(1)）'));
             $form->textarea('answer', __('答案'))->help('开启自动评分的<b style="color: darkred;">关键词评分</b>模式时，需使用<b style="color: darkred;">英文括号</b>将关键词分数标出，<b style="color: darkred;">顿号</b>分隔，答案格式如：<b style="color: darkred;">关键词1(5)、关键词2(3)</b><br>其余情况请填写完整参考答案')->required();

@@ -3,40 +3,69 @@
 namespace App\Admin\Controllers\Common;
 
 use App\Http\Controllers\Controller;
-use App\Paper;
-use App\Question;
-use App\Subjective;
 use Encore\Admin\Controllers\Dashboard;
 use Encore\Admin\Facades\Admin;
 use Encore\Admin\Layout\Column;
 use Encore\Admin\Layout\Content;
 use Encore\Admin\Layout\Row;
 use http\Env\Request;
+use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
+    // 角色id
+    public $role = null;
+
     public function index(Content $content)
     {
-        return $content
-            ->title('首页'.Admin::user()->id)
-            ->description(date("Y年m月d日"))
-            ->row(Dashboard::title())
+        $content->title('首页');
+        $content->description(date("Y年m月d日"));
 
-            ->row(function (Row $row) {
-
+        $id = Admin::user()->id;
+        $role = $this->role($id);
+        $this->role = $role;
+        $content->row(Dashboard::title(Admin::user()->name, $role));
+        $content->row(function (Row $row) {
+            if ($this->role == 1) {
+                // 管理员
                 $row->column(4, function (Column $column) {
-                    $column->append(Dashboard::environment());
+                    $column->append(Dashboard::papers());
                 });
-
                 $row->column(4, function (Column $column) {
-                    $column->append(Dashboard::extensions());
+                    $column->append(Dashboard::answers());
                 });
-
                 $row->column(4, function (Column $column) {
-                    $column->append(Dashboard::dependencies());
+                    $column->append(Dashboard::feedbacks());
                 });
-            })
-            ;
+            } else if ($this->role == 3) {
+                // 教师
+                $row->column(4, function (Column $column) {
+                    $column->append(Dashboard::papers());
+                });
+                $row->column(4, function (Column $column) {
+                    $column->append(Dashboard::answers());
+                });
+                $row->column(4, function (Column $column) {
+                    $column->append(Dashboard::myfeedbacks());
+                });
+            } else if ($this->role == 2) {
+                // 学生
+                $row->column(6, function (Column $column) {
+                    $column->append(Dashboard::mypapers());
+                });
+                $row->column(6, function (Column $column) {
+                    $column->append(Dashboard::myfeedbacks());
+                });
+            }
+        });
+        return $content;
+    }
+
+    // 获取用户角色
+    public function role($uid)
+    {
+        $role_id = DB::table('admin_role_users')->where('user_id', $uid)->value('role_id');
+        return $role_id;
     }
 
     public function test()

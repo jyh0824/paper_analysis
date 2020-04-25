@@ -290,7 +290,7 @@ class SubjectiveAnswerController extends AdminController
                         $auto_score = $this->getScore($input, $time);
                         $info->auto_score = $auto_score;
                     }
-                    $info->score = $input['score'];
+                    $info->score = $input['score']+0;
                     $info->remark = $input['remark'] ? $input['remark'] : null;
                     $info->save();
                     $stu = $info->studentScore;
@@ -375,12 +375,12 @@ class SubjectiveAnswerController extends AdminController
                 'score_id' => $input['score_id'],
                 'answer' => $input['answer'],
                 'sort' => $input['sort'],
-                'score' => empty($input['score']) ? $auto_score : $input['score'],
+                'score' => empty($input['score']) ? $auto_score : $input['score']+0,
                 'auto_score' => $auto_score,
                 'created_at' => $time,
                 'updated_at' => $time,
             ];
-            $subjective_score += empty($input['score']) ? $auto_score + 0 : $input['score'];
+            $subjective_score += empty($input['score']) ? $auto_score : ($input['score']+0);
             $info[] = $data;
 
             return [

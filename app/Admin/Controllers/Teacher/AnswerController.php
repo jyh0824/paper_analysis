@@ -97,15 +97,15 @@ class AnswerController extends AdminController
     {
         $grid = new Grid(new StudentScore);
 
-        $grid->column('id', __('ID'));
-        $grid->column('username', __('学号'));
+        $grid->column('id', __('ID'))->sortable();
+        $grid->column('username', __('学号'))->sortable();
         $grid->column('paper_id', __('套卷'))->display(function ($paper_id) {
             $paper = Paper::find($paper_id);
             return $paper_id . '-' . $paper->classname . '-' . $paper->year;
-        })->width(400);
-        $grid->column('score', __('成绩'));
-        $grid->column('created_at', __('创建时间'));
-        $grid->column('updated_at', __('更新时间'));
+        })->width(400)->sortable();
+        $grid->column('score', __('成绩'))->sortable();
+        $grid->column('created_at', __('创建时间'))->sortable();
+        $grid->column('updated_at', __('更新时间'))->sortable();
 
         // 重写 删除 逻辑
         $grid->actions(function ($actions) {
@@ -156,7 +156,7 @@ class AnswerController extends AdminController
                 $paper->classname('课程名称');
                 $paper->year('年份');
                 $paper->panel()->tools(function ($tools) {
-                    $tools->disableEdit();
+//                    $tools->disableEdit();
                     $tools->disableDelete();
                 });
             });

@@ -7,7 +7,6 @@
 /public/auto_score/word2vec/*
 !/public/auto_score/word2vec/page_sim.py
 /storage/*.key
-/vendor
 .env
 .phpunit.result.cache
 Homestead.json
