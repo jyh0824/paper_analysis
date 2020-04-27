@@ -91,9 +91,9 @@ class AnalysisController extends AdminController
                     $judgement_rate = $this->score->avg('judgement_score') / $full_score[1]->score;
                     $subjective_rate = $this->score->avg('subjective_score') / $full_score[2]->score;
                     $rate = [
-                        $selection_rate * 100,
-                        $judgement_rate * 100,
-                        $subjective_rate * 100,
+                        round($selection_rate * 100,2),
+                        round($judgement_rate * 100,2),
+                        round($subjective_rate * 100,2),
                     ];
                     $hard = round(1 - ($selection_rate + $judgement_rate + $subjective_rate) / 3, 2);
                     $box = new Box("各题型得分率", view('admin.analysis.rate')->with('rate', $rate));
