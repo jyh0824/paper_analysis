@@ -49,9 +49,8 @@ class CreatePapaerTables extends Migration
         Schema::create('subjective_answer', function (Blueprint $table) {
             $table->increments('id');
             $table->string('username')->comment('学号');
-            $table->unsignedInteger('paper_id')->comment('试卷id');
+            $table->unsignedInteger('question_id')->comment('题目id');
             $table->unsignedInteger('score_id')->comment('成绩id');
-            $table->integer('sort')->comment('题目序号')->nullable();
             $table->text('answer')->comment('答案')->nullable();
             $table->float('score')->comment('得分')->nullable();
             $table->float('auto_score')->comment('自动评分得分')->nullable();

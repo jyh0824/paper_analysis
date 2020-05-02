@@ -41,6 +41,13 @@ class Dashboard
                     ['name' => '我的反馈', 'url'  => "/admin/feedback"],
                 ],
             ],
+            // 普通管理员
+            4 => [
+                'username' => $username,
+                'title'   => [
+                    ['name' => '反馈管理', 'url'  => "/admin/auth/feedback"],
+                ],
+            ],
         ];
         return view('admin::dashboard.title')->with('title', $title[$role]);
     }

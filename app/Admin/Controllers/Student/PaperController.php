@@ -122,17 +122,17 @@ class PaperController extends AdminController
                 // 没有判断题
                 $judge = Question::where('paper_id', $this->paper_id)->where('type', 2)->value('id');
                 if ($judge) {
-                    $content = "<lable style='font-size: 18px; font-weight: bold'>选择题得分：".$student_score['selection_score']."</lable>
-                                <lable style='font-size: 18px; font-weight: bold; margin-left: 30px;'>判断题得分：".($student_score['judgement_score']+0)."</lable>
-                                <lable style='font-size: 18px; font-weight: bold; margin-left: 30px;'>主观题得分：".($student_score['subjective_score']+0)."</lable>";
+                    $content = "<lable style='font-size: 18px; font-weight: bold'>选择题：".$student_score['selection_score']."分</lable>
+                                <lable style='font-size: 18px; font-weight: bold; margin-left: 10px;'>判断题：".($student_score['judgement_score']+0)."分</lable>
+                                <lable style='font-size: 18px; font-weight: bold; margin-left: 10px;'>主观题：".($student_score['subjective_score']+0)."分</lable>";
                     $rate = [
                         'selection_score' => $student_score['selection_score']/$full_score[1]*100,
                         'judgement_score' => $student_score['judgement_score']/$full_score[2]*100,
                         'subjective_score' => $student_score['subjective_score']/$full_score[3]*100,
                     ];
                 } else {
-                    $content = "<lable style='font-size: 18px; font-weight: bold'>选择题得分：" . $student_score['selection_score'] . "</lable>
-                                <lable style='font-size: 18px; font-weight: bold; margin-left: 30px;'>主观题得分：" . ($student_score['subjective_score']+0) . "</lable>";
+                    $content = "<lable style='font-size: 18px; font-weight: bold'>选择题：" . $student_score['selection_score'] . "分</lable>
+                                <lable style='font-size: 18px; font-weight: bold; margin-left: 10px;'>主观题：" . ($student_score['subjective_score']+0) . "分</lable>";
                     $rate = [
                         'selection_score' => $student_score['selection_score']/$full_score[1]*100,
                         'subjective_score' => $student_score['subjective_score']/$full_score[3]*100,
@@ -205,7 +205,6 @@ class PaperController extends AdminController
             // 试卷题目展示
             $row->column(6, function (Column $column) {
                 $answers = StudentScore::where('username', Admin::user()->username)->where('paper_id', $this->paper_id)->first(['selection_answer', 'judgement_answer', 'id'])->toArray();
-                $subjective_answer = SubjectiveAnswer::where('score_id', $answers['id'])->orderBy('sort', 'asc')->get(['sort', 'answer', 'score'])->toArray();
                 $questions = $this->questions;
                 $selection = "";
                 $judgement = "";
@@ -249,12 +248,13 @@ class PaperController extends AdminController
                             break;
                         // 主观题
                         case 3:
-                            if (empty($subjective_answer)) {
+                            $subjective_answer = SubjectiveAnswer::where('question_id', $question['id'])->where('username', Admin::user()->username)->first(['answer','score']);
+                            if (!$subjective_answer) {
                                 $your_answer = '暂无';
                                 $score = 0;
                             } else {
-                                $your_answer = isset($subjective_answer[$question['sort'] - 1]['answer']) ? $subjective_answer[$question['sort'] - 1]['answer'] : '无';
-                                $score = isset($subjective_answer[$question['sort'] - 1]['score']) ? $subjective_answer[$question['sort'] - 1]['score'] : 0;
+                                $your_answer = $subjective_answer->answer;
+                                $score = $subjective_answer->score;
                             }
                             $subjective .= "<div style='font-size: 20px; margin-left: 20px;'>
                                                 <label>".$question['sort'].". ".$question['title']."（".$question['score']."分）</label><br><br>

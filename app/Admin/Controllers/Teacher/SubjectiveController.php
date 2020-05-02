@@ -2,6 +2,7 @@
 
 namespace App\Admin\Controllers\Teacher;
 
+use App\Admin\Actions\Paper\DeleteSubjective;
 use App\Paper;
 use App\StudentScore;
 use App\Subjective;
@@ -98,6 +99,12 @@ class SubjectiveController extends AdminController
         $grid->column('score', __('分值'))->width(100);
         $grid->is_auto('是否自动评分')->using([1 => '是', 2 => '否'])->sortable();
 
+        $grid->actions(function ($actions) {
+            // 重写删除功能
+            $actions->disableDelete();
+            $actions->add(new DeleteSubjective());
+        });
+
         // 筛选条件
         $grid->filter(function ($filter) {
             $filter->equal('paper_id', '套卷ID');
@@ -138,7 +145,6 @@ class SubjectiveController extends AdminController
             $show->field('sort', __('题序'));
             $show->field('title', __('题目描述'));
             $show->field('answer', __('答案'));
-//            $show->field('point', __('得分点'));
             $show->field('score', __('分值'));
             $show->field('is_auto',__('是否自动评分'))->using([1 => '是', 2 => '否']);
             $show->field('created_at', __('创建时间'));
@@ -287,8 +293,7 @@ class SubjectiveController extends AdminController
     // 更新自动评分分数
     public function updateAutoScore($id, $answer, $score, $model)
     {
-        $sub = Subjective::find($id);
-        $stu_answers = SubjectiveAnswer::where('paper_id', $sub->paper_id)->where('sort', $sub->sort)->get();
+        $stu_answers = SubjectiveAnswer::where('question_id', $id)->get();
         DB::beginTransaction();
         try {
             foreach ($stu_answers as $stu) {
@@ -304,8 +309,8 @@ class SubjectiveController extends AdminController
                 $old_score = $stu->score;
                 $stu->score = ($stu->auto_score == $stu->score ? $auto_score : $stu->score);
                 $new_score = $stu->score;
-                $stu->save();
                 $stu->auto_score = $auto_score;
+                $stu->save();
                 $stu_score = StudentScore::find($stu->score_id);
                 $stu_score->subjective_score += ($new_score-$old_score);
                 $stu_score->score += ($new_score-$old_score);

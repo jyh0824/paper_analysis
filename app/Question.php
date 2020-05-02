@@ -21,4 +21,10 @@ class Question extends Model
     {
         return $this->belongsTo(Paper::class, 'paper_id');
     }
+
+    // 与学生主观题答案一对多
+    public function sub_answer()
+    {
+        return $this->hasMany(SubjectiveAnswer::class, 'question_id');
+    }
 }

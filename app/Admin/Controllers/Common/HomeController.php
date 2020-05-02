@@ -48,7 +48,12 @@ class HomeController extends Controller
                 $row->column(4, function (Column $column) {
                     $column->append(Dashboard::myfeedbacks());
                 });
-            } else if ($this->role == 2) {
+            } else if ($this->role == 4) {
+                // 普通管理员
+                $row->column(12, function (Column $column) {
+                    $column->append(Dashboard::feedbacks());
+                });
+            } else {
                 // 学生
                 $row->column(6, function (Column $column) {
                     $column->append(Dashboard::mypapers());

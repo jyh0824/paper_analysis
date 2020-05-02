@@ -24,6 +24,6 @@ class StudentScore extends Model
     // 主观题答案
     public function subjective()
     {
-        return $this->hasMany(SubjectiveAnswer::class, 'score_id', 'id');
+        return $this->hasMany(SubjectiveAnswer::class, 'score_id', 'id')->join('question', 'subjective_answer.question_id', '=', 'question.id')->orderBy('question.sort', 'asc')->select(['subjective_answer.*', 'question.sort', 'question.paper_id']);
     }
 }

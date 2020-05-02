@@ -36,10 +36,10 @@ class MyFeedbackController extends AdminController
         $grid->column('content', __('反馈内容'));
         $grid->column('status', __('状态'))->display(function ($status) {
             return $status ? "<i class=\"fa fa-check\" style='color: darkgreen;'></i>已处理" : "<i class=\"fa fa-times\" style='color: darkred;'></i>未处理";
-        })->sortable();
-        $grid->column('remark', __('处理备注'));
+        })->sortable()->width(100);
+        $grid->column('remark', __('处理备注'))->width(150);
         $grid->column('created_at', __('创建时间'))->hide();
-        $grid->column('updated_at', __('更新时间'));
+        $grid->column('updated_at', __('更新时间'))->width(150)->sortable();
 
         // 禁用导出键
         $grid->disableExport();
@@ -100,6 +100,12 @@ class MyFeedbackController extends AdminController
 
         $form->setAction('create');
         $form->textarea('content', __('反馈内容'))->required();
+
+        $form->footer(function ($footer) {
+            $footer->disableCreatingCheck();
+            $footer->disableViewCheck();
+            $footer->disableEditingCheck();
+        });
 
         return $form;
     }

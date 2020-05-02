@@ -39,9 +39,9 @@ class SubjectiveAnswer extends Model
         return Question::where('paper_id', $paper_id)->where('type', 3)->where('sort', $sort)->first();
     }
 
-    // 与试卷模型多对一
-    public function paper()
+    // 与题目多对一
+    public function question()
     {
-        return $this->belongsTo(Paper::class, 'paper_id');
+        return $this->belongsTo(Question::class, 'question_id');
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Admin\Controllers\Teacher;
 
+use App\Admin\Actions\Paper\DeleteJudgement;
 use App\Judgement;
 use App\Paper;
 use Encore\Admin\Controllers\AdminController;
@@ -104,6 +105,12 @@ class JudgementController extends AdminController
         });
         $grid->column('score', __('分值'))->width(100);
 
+        $grid->actions(function ($actions) {
+            // 重写删除功能
+            $actions->disableDelete();
+            $actions->add(new DeleteJudgement());
+        });
+
         // 筛选条件
         $grid->filter(function ($filter) {
             $filter->equal('paper_id', '套卷ID');
@@ -191,10 +198,10 @@ class JudgementController extends AdminController
                 $tools->add("<a href='/admin/question/judgement' class='btn btn-sm btn-default' style='float: right; margin-right: 5px'><i class='fa fa-list'></i>&nbsp;列表</a>");
             });
             $form->select('paper_id', __('套卷'))->options($paper_arr)->value($question->paper_id)->disable();
-            $form->text('sort', __('题序'))->value($question->sort);
-            $form->text('title', __('题目描述'))->value($question->title);
-            $form->select('answer', __('答案'))->options([1 => '√', 2 => '×'])->value($question->answer);
-            $form->text('score', __('分值'))->value($question->score);
+            $form->text('sort', __('题序'))->value($question->sort)->required();
+            $form->text('title', __('题目描述'))->value($question->title)->required();
+            $form->select('answer', __('答案'))->options([1 => '√', 2 => '×'])->value($question->answer)->required();
+            $form->text('score', __('分值'))->value($question->score)->required();
         } else {
             $form = new Form(new Judgement);
             $form->setAction('create');
@@ -206,10 +213,10 @@ class JudgementController extends AdminController
                 $form->select('paper_id', __('套卷'))->options($paper_arr)->required();
             }
             $form->hasMany('self', __('判断题'), function (Form\NestedForm $form) {
-                $form->text('sort', __('题序'));
-                $form->text('title', __('题目描述'));
-                $form->select('answer', __('答案'))->options([1 => '√', 2 => '×']);
-                $form->text('score', __('分值'));
+                $form->text('sort', __('题序'))->required();
+                $form->text('title', __('题目描述'))->required();
+                $form->select('answer', __('答案'))->options([1 => '√', 2 => '×'])->required();
+                $form->text('score', __('分值'))->required();
             });
         }
         $form->footer(function ($footer) {

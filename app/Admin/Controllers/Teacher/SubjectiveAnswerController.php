@@ -20,7 +20,7 @@ use Encore\Admin\Facades\Admin;
 
 class SubjectiveAnswerController extends AdminController
 {
-    // 主观题答案模型
+    // 学生主观题答案模型
 
     /**
      * Title for current resource.
@@ -39,10 +39,10 @@ class SubjectiveAnswerController extends AdminController
      */
     public function index(Content $content)
     {
-        $content->header('主观题答案');
+        $content->header('学生主观题答案');
         $content->description(date("Y年m月d日"));
         $content->breadcrumb(
-            ['text' => '主观题答案']
+            ['text' => '学生主观题答案']
         );
         $content->body($this->grid());
 
@@ -57,10 +57,10 @@ class SubjectiveAnswerController extends AdminController
     public function create(Content $content)
     {
         $this->save(null);
-        $content->header('主观题答案-新建');
+        $content->header('学生主观题答案-新建');
         $content->description(date("Y年m月d日"));
         $content->breadcrumb(
-            ['text' => '主观题答案', 'url' => '/answer/subjective'],
+            ['text' => '学生主观题答案', 'url' => '/answer/subjective'],
             ['text' => '新建']
         );
         $content->body($this->form(null));
@@ -75,10 +75,10 @@ class SubjectiveAnswerController extends AdminController
     public function edit($id, Content $content)
     {
         $this->save($id);
-        $content->header('主观题答案-编辑');
+        $content->header('学生主观题答案-编辑');
         $content->description(date("Y年m月d日"));
         $content->breadcrumb(
-            ['text' => '主观题答案', 'url' => '/answer/subjective'],
+            ['text' => '学生主观题答案', 'url' => '/answer/subjective'],
             ['text' => $id],
             ['text' => '编辑']
         );
@@ -97,12 +97,13 @@ class SubjectiveAnswerController extends AdminController
 
         $grid->column('id', __('ID'))->sortable();
         $grid->column('username', __('学号'))->sortable();
-        $grid->column('paper_id', __('套卷'))->display(function ($paper_id) {
-            $paper = Paper::find($paper_id);
-            return $paper_id . '-' . $paper->classname . '-' . $paper->year;
+        $grid->column('question_id', __('套卷'))->display(function ($question_id) {
+            $question = Question::find($question_id);
+            $paper = Paper::find($question->paper_id);
+            return $paper->id . '-' . $paper->classname . '-' . $paper->year;
         })->width(400)->sortable();
-        $grid->column('sort', __('题序'))->sortable();
-        $grid->column('score', __('得分'));
+        $grid->question()->sort('题序');
+        $grid->column('score', __('得分'))->sortable();
         $grid->column('remark', __('备注'));
 
         // 筛选条件
@@ -130,11 +131,11 @@ class SubjectiveAnswerController extends AdminController
     protected function detail($id, Content $content)
     {
         $subjectA = SubjectiveAnswer::findOrFail($id);
-        $this->question = Subjective::where('paper_id', $subjectA->paper_id)->where('sort', $subjectA->sort)->first(['title', 'answer', 'score'])->toArray();
-        $content->header('主观题答案-详情');
+        $this->question = Subjective::where('id', $subjectA->question_id)->first(['title', 'answer', 'score'])->toArray();
+        $content->header('学生主观题答案-详情');
         $content->description(date("Y年m月d日"));
         $content->breadcrumb(
-            ['text' => '主观题答案', 'url' => '/answer/subjective'],
+            ['text' => '学生主观题答案', 'url' => '/answer/subjective'],
             ['text' => $id],
             ['text' => '详情']
         );
@@ -142,18 +143,16 @@ class SubjectiveAnswerController extends AdminController
             $show->panel()->title('详情');
             $show->field('id', __('ID'));
             $show->field('username', __('学号'));
-            $show->field('paper_id', __('套卷ID'));
-            $show->paper('套卷信息', function ($paper) {
-                $paper->setResource('/admin/paper');
-                $paper->id('套卷ID');
-                $paper->classname('课程名称');
-                $paper->year('年份');
-                $paper->panel()->tools(function ($tools) {
-                    $tools->disableEdit();
-                    $tools->disableDelete();
-                });
+            $model = $show->getModel();
+            $show->paper('套卷')->as(function ($question_id) use ($model) {
+                $paper_id = Question::find($model->question_id)->value('paper_id');
+                $paper = Paper::find($paper_id);
+                return $paper_id.'-'.$paper->classname.'-'.$paper->year;
             });
-            $show->field('sort', __('题序'));
+            $show->question_id('题序')->as(function ($question_id) {
+                $question = Subjective::find($question_id);
+                return $question->sort;
+            });
             // 自定义扩展展示题目描述
             $show->field('title', __('题目'))->questioninfo($this->question['title']);
             $show->field('question_answer', __('参考答案'))->questioninfo($this->question['answer']);
@@ -202,6 +201,7 @@ class SubjectiveAnswerController extends AdminController
         }
         if (null != $id) {
             $answer = SubjectiveAnswer::findOrFail($id);
+            $question = Question::find($answer->question_id);
             $form = new Form($answer);
             $form->setAction('edit');
             $form->setTitle('编辑');
@@ -213,11 +213,10 @@ class SubjectiveAnswerController extends AdminController
                 $tools->add("<a href='{$list}' class='btn btn-sm btn-default' style='float: right; margin-right: 5px;'><i class='fa fa-list'></i>&nbsp;列表</a>");
             });
             $form->select('username', __('学号'))->options([$answer->username => $stu_arr[$answer->username]])->value($answer->username)->disable();
-            $form->select('paper_id', __('套卷'))->options([$answer->paper_id => $paper_arr[$answer->paper_id]])->value($answer->paper_id)->disable();
+            $form->select('paper_id', __('套卷'))->options([$question->paper_id => $paper_arr[$question->paper_id]])->value($question->paper_id)->disable();
             $form->textarea('answer', __('答案'))->value($answer->answer)->required();
             $form->hidden('sa_id')->value($id);
-            $criterion = $answer->criterion($answer->paper_id, $answer->sort);
-            $form->number('score', __('得分'))->value($answer->score)->max($criterion->score)->help('是否开启自动评分不影响人工修改得分，最终以人工修改的得分为结果')->required();
+            $form->number('score', __('得分'))->value($answer->score)->max($question->score)->help('是否开启自动评分不影响人工修改得分，最终以人工修改的得分为结果')->required();
             $form->text('auto_score', __('自动评分分数'))->value($answer->auto_score != null ? $answer->auto_score : '未开启自动评分')->disable();
             $form->text('remark', __('备注'))->value($answer->remark);
             $form->tools(function (Form\Tools $tools) use ($id) {
@@ -239,10 +238,11 @@ class SubjectiveAnswerController extends AdminController
                 $form->hidden('paper_id')->value($score->paper_id);
                 $form->hidden('score_id')->value($score_id);
                 // 获取未录入答案的题序
-                $questions = Question::where('paper_id', $score->paper_id)->where('type', 3)->orderBy('sort')->pluck('sort')->toArray();
-                $answers = SubjectiveAnswer::where('username', $score->username)->where('paper_id', $score->paper_id)->orderBy('sort')->pluck('sort')->toArray();
+                $questions = Question::where('paper_id', $score->paper_id)->where('type', 3)->orderBy('sort')->pluck('id')->toArray();
+                $answers = SubjectiveAnswer::where('username', $score->username)->orderBy('question_id')->pluck('question_id')->toArray();
                 foreach (array_diff($questions, $answers) as $value) {
-                    $sort_arr[$value] = $value;
+                    $sort = Subjective::find($value);
+                    $sort_arr[$sort->sort] = $sort->sort;
                 }
             }
             $form->select('sort', __('题序'))->options($sort_arr)->required();
@@ -330,7 +330,7 @@ class SubjectiveAnswerController extends AdminController
         if (isset($input['sa_id'])) {
             // 编辑时修改答案
             $sub_answer = SubjectiveAnswer::find($input['sa_id']);
-            $answer = Subjective::where('paper_id', $sub_answer->paper_id)->where('sort', $sub_answer->sort)->first(['answer', 'score', 'is_auto', 'model']);
+            $answer = Subjective::where('id', $sub_answer->question_id)->first(['answer', 'score', 'is_auto', 'model']);
             if ($answer->is_auto == 1) {
                 // 自动评分
                 if ($answer->model == 1) {
@@ -340,7 +340,7 @@ class SubjectiveAnswerController extends AdminController
                 } else {
                     // 相似度评分模式
                     // 获取相似度评分结果
-                    $sim = $this->getSim($answer->answer, $input['answer'], $sub_answer->paper_id . '_' . $sub_answer->sort, substr($sub_answer->username,-4));
+                    $sim = $this->getSim($answer->answer, $input['answer'], $answer->paper_id . '_' . $answer->sort, substr($sub_answer->username,-4));
                     $auto_score = round(($answer->score + 0) * $sim, 2);
                 }
             } else {
@@ -369,12 +369,12 @@ class SubjectiveAnswerController extends AdminController
                 // 未开启自动评分
                 $auto_score = null;
             }
+            $question_id = Subjective::where('paper_id', $input['paper_id'])->where('sort', $input['sort'])->value('id');
             $data = [
                 'username' => $input['username'],
-                'paper_id' => $input['paper_id'],
+                'question_id' => $question_id,
                 'score_id' => $input['score_id'],
                 'answer' => $input['answer'],
-                'sort' => $input['sort'],
                 'score' => empty($input['score']) ? $auto_score : $input['score']+0,
                 'auto_score' => $auto_score,
                 'created_at' => $time,

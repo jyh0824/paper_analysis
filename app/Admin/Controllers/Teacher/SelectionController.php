@@ -2,6 +2,7 @@
 
 namespace App\Admin\Controllers\Teacher;
 
+use App\Admin\Actions\Paper\Delete;
 use App\Paper;
 use App\Selection;
 use Encore\Admin\Facades\Admin;
@@ -99,6 +100,12 @@ class SelectionController extends AdminController
         // 禁用导出键
         $grid->disableExport();
 
+        $grid->actions(function ($actions) {
+            // 重写删除功能
+            $actions->disableDelete();
+            $actions->add(new Delete());
+        });
+
         // 筛选条件
         $grid->filter(function ($filter) {
             $filter->equal('paper_id', '套卷ID');
@@ -182,14 +189,14 @@ class SelectionController extends AdminController
                 $tools->add("<a href='/admin/question/selection' class='btn btn-sm btn-default' style='float: right; margin-right: 5px'><i class='fa fa-list'></i>&nbsp;列表</a>");
             });
             $form->select('paper_id', __('套卷'))->options($paper_arr)->value($question->paper_id)->disable();
-            $form->text('sort', __('题序'))->value($question->sort);
-            $form->text('title', __('题目描述'))->value($question->title);
-            $form->text('option1', __('选项A'))->value($question->option1);
-            $form->text('option2', __('选项B'))->value($question->option2);
-            $form->text('option3', __('选项C'))->value($question->option3);
-            $form->text('option4', __('选项D'))->value($question->option4);
-            $form->select('answer', __('答案'))->options(['A' => 'A', 'B' => 'B', 'C' => 'C', 'D' => 'D'])->value($question->answer);
-            $form->text('score', __('分值'))->value($question->score);
+            $form->text('sort', __('题序'))->value($question->sort)->required();
+            $form->text('title', __('题目描述'))->value($question->title)->required();
+            $form->text('option1', __('选项A'))->value($question->option1)->required();
+            $form->text('option2', __('选项B'))->value($question->option2)->required();
+            $form->text('option3', __('选项C'))->value($question->option3)->required();
+            $form->text('option4', __('选项D'))->value($question->option4)->required();
+            $form->select('answer', __('答案'))->options(['A' => 'A', 'B' => 'B', 'C' => 'C', 'D' => 'D'])->value($question->answer)->required();
+            $form->text('score', __('分值'))->value($question->score)->required();
         } else {
             $form = new Form(new Selection);
             $form->setAction('create');
@@ -202,14 +209,14 @@ class SelectionController extends AdminController
                 $form->select('paper_id', __('套卷'))->options($paper_arr)->required();
             }
             $form->hasMany('self', __('选择题'), function (Form\NestedForm $form) {
-                $form->text('sort', __('题序'));
-                $form->text('title', __('题目描述'));
-                $form->text('option1', __('选项A'));
-                $form->text('option2', __('选项B'));
-                $form->text('option3', __('选项C'));
-                $form->text('option4', __('选项D'));
-                $form->select('answer', __('答案'))->options(['A' => 'A', 'B' => 'B', 'C' => 'C', 'D' => 'D']);
-                $form->text('score', __('分值'));
+                $form->text('sort', __('题序'))->required();
+                $form->text('title', __('题目描述'))->required();
+                $form->text('option1', __('选项A'))->required();
+                $form->text('option2', __('选项B'))->required();
+                $form->text('option3', __('选项C'))->required();
+                $form->text('option4', __('选项D'))->required();
+                $form->select('answer', __('答案'))->options(['A' => 'A', 'B' => 'B', 'C' => 'C', 'D' => 'D'])->required();
+                $form->text('score', __('分值'))->required();
             });
         }
         $form->footer(function ($footer) {

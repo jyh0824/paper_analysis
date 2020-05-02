@@ -95,6 +95,7 @@ class AnalysisController extends AdminController
                         round($judgement_rate * 100,2),
                         round($subjective_rate * 100,2),
                     ];
+                    // 难度系数
                     $hard = round(1 - ($selection_rate + $judgement_rate + $subjective_rate) / 3, 2);
                     $box = new Box("各题型得分率", view('admin.analysis.rate')->with('rate', $rate));
                     $box->footer("<div style='font-size: 18px; font-weight: bold;'><label>试卷难度系数：{$hard}</label></div>");
@@ -120,9 +121,9 @@ class AnalysisController extends AdminController
                                 'id' => $p->id,
                                 'y' => $p->year,
                                 'avg' => $avg,
-                                'selection_rate' => $selection_rate,
-                                'judgement_rate' => $judgement_rate,
-                                'subjective_rate' => $subjective_rate,
+                                'selection_rate' => round($selection_rate, 2),
+                                'judgement_rate' => round($judgement_rate, 2),
+                                'subjective_rate' => round($subjective_rate, 2),
                             ];
                         }
                         $box = new Box("历年指标对比", view('admin.analysis.compare')->with('compare', $past_arr));
@@ -138,9 +139,6 @@ class AnalysisController extends AdminController
                 }
             });
         }
-//        $box = new Box('成绩分析', view('admin.analysis'));
-//        $box->collapsable();
-//        $content->body($box);
 
         return $content;
     }

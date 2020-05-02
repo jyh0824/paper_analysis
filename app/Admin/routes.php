@@ -26,25 +26,23 @@ Route::group([
     $router->any('question/selection/create', 'Teacher\SelectionController@create');
     $router->any('question/selection/{id}', 'Teacher\SelectionController@detail');
     $router->any('question/selection/{id}/edit', 'Teacher\SelectionController@edit');
-    $router->any('question/selection/{id}/delete', 'Teacher\SelectionController@delete');
     // 判断题管理
     $router->any('question/judgement', 'Teacher\JudgementController@index');
     $router->any('question/judgement/create', 'Teacher\JudgementController@create');
     $router->any('question/judgement/{id}', 'Teacher\JudgementController@detail');
     $router->any('question/judgement/{id}/edit', 'Teacher\JudgementController@edit');
-    $router->any('question/judgement/{id}/delete', 'Teacher\JudgementController@delete');
     // 主观题管理
     $router->any('question/subjective', 'Teacher\SubjectiveController@index');
     $router->any('question/subjective/create', 'Teacher\SubjectiveController@create');
     $router->any('question/subjective/{id}', 'Teacher\SubjectiveController@detail');
     $router->any('question/subjective/{id}/edit', 'Teacher\SubjectiveController@edit');
-    $router->any('question/subjective/{id}/delete', 'Teacher\SubjectiveController@delete');
 
     // 主观题答案管理
     $router->any('answer/subjective', 'Teacher\SubjectiveAnswerController@index');
     $router->any('answer/subjective/create', 'Teacher\SubjectiveAnswerController@create');
     $router->any('answer/subjective/{id}', 'Teacher\SubjectiveAnswerController@detail');
     $router->any('answer/subjective/{id}/edit', 'Teacher\SubjectiveAnswerController@edit');
+
     // 学生答案管理
     $router->any('answer', 'Teacher\AnswerController@index');
     $router->any('answer/create', 'Teacher\AnswerController@create');

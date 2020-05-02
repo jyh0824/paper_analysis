@@ -179,13 +179,9 @@ class AnswerController extends AdminController
             $show->subjective('主观题答案', function ($subjective) {
                 $subjective->resource('/admin/answer/subjective');
                 $subjective->id('ID');
-                $subjective->column('paper_id', __('套卷'))->display(function ($paper_id) {
-                    $paper = Paper::find($paper_id);
-                    return $paper_id . '-' . $paper->classname . '-' . $paper->year;
-                })->width(300);
-                $subjective->sort('序号');
+                $subjective->sort('题序')->width(50);
                 $subjective->answer('答案');
-                $subjective->score('得分');
+                $subjective->score('得分')->width(50);
                 $subjective->disableExport();
                 $subjective->actions(function ($actions) {
                     $actions->disableDelete();
@@ -236,10 +232,12 @@ class AnswerController extends AdminController
                 $tools->add("<a href='{$url}' class='btn btn-sm btn-primary' style='float: right'><i class='fa fa-eye'></i>&nbsp;查看</a>");
                 $tools->add("<a href='/admin/answer' class='btn btn-sm btn-default' style='float: right; margin-right: 5px;'><i class='fa fa-list'></i>&nbsp;列表</a>");
             });
-            $form->select('username', __('学号'))->options([$answer->username => $stu_arr[$answer->username]])->value($answer->username)->disable();
-            $form->select('paper_id', __('套卷'))->options([$answer->paper_id => $paper_arr[$answer->paper_id]])->value($answer->paper_id)->disable();
-            $form->text('selection_answer', __('选择题答案'))->value($answer->selection_answer);
-            $form->text('judgement_answer', __('判断题答案'))->value($answer->judgement_answer)->help('没有判断题可不填');
+            $form->select('u', __('学号'))->options([$answer->username => $stu_arr[$answer->username]])->value($answer->username)->disable();
+            $form->select('p', __('套卷'))->options([$answer->paper_id => $paper_arr[$answer->paper_id]])->value($answer->paper_id)->disable();
+            $form->hidden('username', __('学号'))->value($answer->username);
+            $form->hidden('paper_id', __('套卷'))->value($answer->paper_id);
+            $form->text('selection_answer', __('选择题答案'))->value($answer->selection_answer)->placeholder('输入 选择题答案 (按顺序输入所有答案)');
+            $form->text('judgement_answer', __('判断题答案'))->value($answer->judgement_answer)->placeholder('输入 判断题答案 (正确为1，错误为2，例：若正确答案为√√××√，则输入11221)')->help('没有判断题可不填');
         } else {
             $form = new Form(new SubjectiveAnswer);
             $form->setAction('create');
@@ -249,9 +247,9 @@ class AnswerController extends AdminController
             $form->text('selection_answer', __('选择题答案'))->placeholder('输入 选择题答案 (按顺序输入所有答案)');
             $form->text('judgement_answer', __('判断题答案'))->placeholder('输入 判断题答案 (正确为1，错误为2，例：若正确答案为√√××√，则输入11221)')->help('没有判断题可不填');
             $form->hasMany('subjective', __('主观题'), function (Form\NestedForm $form) {
-                $form->text('sort', __('题序'));
-                $form->textarea('answer', __('答案'));
-                $form->text('score', __('得分'))->help('开启自动评分后可不填，后续可修改自动评分结果；若开启自动评分后填入得分，则最后得分以人工评分为准，系统仍会展示自动评分结果。');
+                $form->text('sort', __('题序'))->required();
+                $form->textarea('answer', __('答案'))->required();
+                $form->text('score', __('得分'))->help('开启自动评分后可不填，后续可修改自动评分结果；若开启自动评分后填入得分，则最后得分以人工评分为准，系统仍会展示自动评分结果。')->required();
             });
         }
         $form->footer(function ($footer) {
@@ -382,11 +380,11 @@ class AnswerController extends AdminController
                     // 未开启自动评分
                     $auto_score = null;
                 }
+                $question_id = Subjective::where('paper_id', $input['paper_id'])->where('sort', $value['sort'])->value('id');
                 $data = [
                     'username' => $input['username'],
-                    'paper_id' => $input['paper_id'],
+                    'question_id' => $question_id,
                     'answer' => $value['answer'],
-                    'sort' => $value['sort'],
                     'score' => empty($value['score']) ? $auto_score : $value['score']+0,
                     'auto_score' => $auto_score,
                     'created_at' => $time,
