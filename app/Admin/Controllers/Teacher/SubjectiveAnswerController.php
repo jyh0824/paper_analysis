@@ -288,6 +288,9 @@ class SubjectiveAnswerController extends AdminController
                     if (strcmp($old_answer, $input['answer']) != 0) {
                         $info->answer = $input['answer'];
                         $auto_score = $this->getScore($input, $time);
+                        if($info->auto_score == $info->score) {
+                            $info->score = $auto_score;
+                        }
                         $info->auto_score = $auto_score;
                     }
                     $info->score = $input['score']+0;
