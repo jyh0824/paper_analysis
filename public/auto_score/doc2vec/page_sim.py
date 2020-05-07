@@ -42,7 +42,7 @@ def doc2vec(file_name, model):
 if __name__ == '__main__':
     argv = sys.argv
     startTime = datetime.datetime.now()
-    model = gensim.models.Doc2Vec.load('./auto_score/doc2vec/dataset.doc2vec')
+    model = gensim.models.Doc2Vec.load('./auto_score/doc2vec/dataset_1.doc2vec')
     p1 = './auto_score/answer_log/'+argv[1]
     p2 = './auto_score/answer_log/'+argv[2]
     p1_doc2vec = doc2vec(p1, model)
