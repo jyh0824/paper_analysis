@@ -26,6 +26,10 @@ class MenuController extends Controller
         return $content
             ->title(trans('admin.menu'))
             ->description(trans('admin.list'))
+            ->breadcrumb(
+                ['text' => '系统管理'],
+                ['text' => '菜单']
+            )
             ->row(function (Row $row) {
                 $row->column(6, $this->treeView()->render());
 

@@ -28,9 +28,10 @@ class FeedbackController extends AdminController
     public function index(Content $content)
     {
         $content->header('反馈管理');
-        $content->description(date("Y年m月d日"));
+        $content->description('列表');
         $content->breadcrumb(
-            ['text' => '反馈管理']
+            ['text' => '系统管理'],
+            ['text' => '反馈']
         );
         $content->body($this->grid());
 

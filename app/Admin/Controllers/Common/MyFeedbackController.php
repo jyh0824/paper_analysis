@@ -25,7 +25,7 @@ class MyFeedbackController extends AdminController
     {
         $id = Admin::user()->id;
         $content->header('我的反馈');
-        $content->description(date("Y年m月d日"));
+        $content->description('列表');
         $content->breadcrumb(
             ['text' => '我的反馈']
         );
@@ -59,8 +59,8 @@ class MyFeedbackController extends AdminController
     public function create(Content $content)
     {
         $this->save();
-        $content->header('我的反馈-新建');
-        $content->description(date("Y年m月d日"));
+        $content->header('我的反馈');
+        $content->description('新建');
         $content->breadcrumb(
             ['text' => '我的反馈', 'url' => '/feedback'],
             ['text' => '新建']

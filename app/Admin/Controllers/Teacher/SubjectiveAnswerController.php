@@ -40,7 +40,7 @@ class SubjectiveAnswerController extends AdminController
     public function index(Content $content)
     {
         $content->header('学生主观题答案');
-        $content->description(date("Y年m月d日"));
+        $content->description('列表');
         $content->breadcrumb(
             ['text' => '学生主观题答案']
         );
@@ -57,8 +57,8 @@ class SubjectiveAnswerController extends AdminController
     public function create(Content $content)
     {
         $this->save(null);
-        $content->header('学生主观题答案-新建');
-        $content->description(date("Y年m月d日"));
+        $content->header('学生主观题答案');
+        $content->description('新建');
         $content->breadcrumb(
             ['text' => '学生主观题答案', 'url' => '/answer/subjective'],
             ['text' => '新建']
@@ -75,8 +75,8 @@ class SubjectiveAnswerController extends AdminController
     public function edit($id, Content $content)
     {
         $this->save($id);
-        $content->header('学生主观题答案-编辑');
-        $content->description(date("Y年m月d日"));
+        $content->header('学生主观题答案');
+        $content->description('编辑');
         $content->breadcrumb(
             ['text' => '学生主观题答案', 'url' => '/answer/subjective'],
             ['text' => $id],
@@ -132,8 +132,8 @@ class SubjectiveAnswerController extends AdminController
     {
         $subjectA = SubjectiveAnswer::findOrFail($id);
         $this->question = Subjective::where('id', $subjectA->question_id)->first(['title', 'answer', 'score'])->toArray();
-        $content->header('学生主观题答案-详情');
-        $content->description(date("Y年m月d日"));
+        $content->header('学生主观题答案');
+        $content->description('详情');
         $content->breadcrumb(
             ['text' => '学生主观题答案', 'url' => '/answer/subjective'],
             ['text' => $id],

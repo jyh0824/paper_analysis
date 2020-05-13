@@ -50,7 +50,7 @@ class PaperController extends AdminController
     public function index(Content $content)
     {
         $content->header('我的试卷');
-        $content->description(date("Y年m月d日"));
+        $content->description('列表');
         $content->breadcrumb(
             ['text' => '我的试卷']
         );

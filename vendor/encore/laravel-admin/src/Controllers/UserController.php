@@ -4,6 +4,7 @@ namespace Encore\Admin\Controllers;
 
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
+use Encore\Admin\Layout\Content;
 use Encore\Admin\Show;
 
 class UserController extends AdminController
@@ -17,12 +18,33 @@ class UserController extends AdminController
     }
 
     /**
+     * Index interface.
+     *
+     * @param Content $content
+     *
+     * @return Content
+     */
+    public function index(Content $content)
+    {
+        return $content
+            ->title(trans('admin.administrator'))
+            ->description(trans('admin.list'))
+            ->breadcrumb(
+                ['text' => '系统管理'],
+                ['text' => '用户']
+            )
+            ->body($this->grid());
+    }
+
+    /**
      * Make a grid builder.
      *
      * @return Grid
      */
     protected function grid()
     {
+
+
         $userModel = config('admin.database.users_model');
 
         $grid = new Grid(new $userModel());

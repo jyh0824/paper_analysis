@@ -4,6 +4,7 @@ namespace Encore\Admin\Controllers;
 
 use Encore\Admin\Auth\Database\OperationLog;
 use Encore\Admin\Grid;
+use Encore\Admin\Layout\Content;
 use Illuminate\Support\Arr;
 
 class LogController extends AdminController
@@ -14,6 +15,25 @@ class LogController extends AdminController
     protected function title()
     {
         return trans('admin.operation_log');
+    }
+
+    /**
+     * Index interface.
+     *
+     * @param Content $content
+     *
+     * @return Content
+     */
+    public function index(Content $content)
+    {
+        return $content
+            ->title(trans('admin.operation_log'))
+            ->description(trans('admin.list'))
+            ->breadcrumb(
+                ['text' => '系统管理'],
+                ['text' => '操作记录']
+            )
+            ->body($this->grid());
     }
 
     /**

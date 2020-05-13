@@ -42,7 +42,7 @@ class AnswerController extends AdminController
     public function index(Content $content)
     {
         $content->header('学生答案');
-        $content->description(date("Y年m月d日"));
+        $content->description('列表');
         $content->breadcrumb(
             ['text' => '学生答案']
         );
@@ -59,8 +59,8 @@ class AnswerController extends AdminController
     public function create(Content $content)
     {
         $this->save(null);
-        $content->header('学生答案-新建');
-        $content->description(date("Y年m月d日"));
+        $content->header('学生答案');
+        $content->description('新建');
         $content->breadcrumb(
             ['text' => '学生答案', 'url' => '/answer'],
             ['text' => '新建']
@@ -77,8 +77,8 @@ class AnswerController extends AdminController
     public function edit($id, Content $content)
     {
         $this->save($id);
-        $content->header('学生答案-编辑');
-        $content->description(date("Y年m月d日"));
+        $content->header('学生答案');
+        $content->description('编辑');
         $content->breadcrumb(
             ['text' => '学生答案', 'url' => '/answer'],
             ['text' => $id],
@@ -130,8 +130,8 @@ class AnswerController extends AdminController
      */
     protected function detail($id, Content $content)
     {
-        $content->header('学生答案-详情');
-        $content->description(date("Y年m月d日"));
+        $content->header('学生答案');
+        $content->description('详情');
         $content->breadcrumb(
             ['text' => '学生答案', 'url' => '/answer'],
             ['text' => $id],

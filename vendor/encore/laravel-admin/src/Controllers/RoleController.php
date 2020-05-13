@@ -4,6 +4,7 @@ namespace Encore\Admin\Controllers;
 
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
+use Encore\Admin\Layout\Content;
 use Encore\Admin\Show;
 
 class RoleController extends AdminController
@@ -14,6 +15,25 @@ class RoleController extends AdminController
     protected function title()
     {
         return trans('admin.roles');
+    }
+
+    /**
+     * Index interface.
+     *
+     * @param Content $content
+     *
+     * @return Content
+     */
+    public function index(Content $content)
+    {
+        return $content
+            ->title(trans('admin.roles'))
+            ->description(trans('admin.list'))
+            ->breadcrumb(
+                ['text' => '系统管理'],
+                ['text' => '角色']
+            )
+            ->body($this->grid());
     }
 
     /**

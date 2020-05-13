@@ -32,7 +32,7 @@ class JudgementController extends AdminController
     public function index(Content $content)
     {
         $content->header('判断题管理');
-        $content->description(date("Y年m月d日"));
+        $content->description('列表');
         $content->breadcrumb(
             ['text' => '判断题管理']
         );
@@ -49,8 +49,8 @@ class JudgementController extends AdminController
     public function create(Content $content)
     {
         $this->save(null);
-        $content->header('判断题管理-新建');
-        $content->description(date("Y年m月d日"));
+        $content->header('判断题管理');
+        $content->description('新建');
         $content->breadcrumb(
             ['text' => '判断题管理', 'url' => '/question/judgement'],
             ['text' => '新建']
@@ -67,8 +67,8 @@ class JudgementController extends AdminController
     public function edit($id, Content $content)
     {
         $this->save($id);
-        $content->header('判断题管理-编辑');
-        $content->description(date("Y年m月d日"));
+        $content->header('判断题管理');
+        $content->description('编辑');
         $content->breadcrumb(
             ['text' => '判断题管理', 'url' => '/question/judgement'],
             ['text' => $id],
@@ -127,8 +127,8 @@ class JudgementController extends AdminController
      */
     protected function detail($id, Content $content)
     {
-        $content->header('主观题管理-详情');
-        $content->description(date("Y年m月d日"));
+        $content->header('主观题管理');
+        $content->description('详情');
         $content->breadcrumb(
             ['text' => '主观题管理', 'url' => '/question/judgement'],
             ['text' => $id],

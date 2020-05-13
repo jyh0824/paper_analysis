@@ -6,6 +6,7 @@ use Encore\Admin\Form;
 use Encore\Admin\Grid;
 use Encore\Admin\Show;
 use Illuminate\Support\Str;
+use Encore\Admin\Layout\Content;
 
 class PermissionController extends AdminController
 {
@@ -15,6 +16,25 @@ class PermissionController extends AdminController
     protected function title()
     {
         return trans('admin.permissions');
+    }
+
+    /**
+     * Index interface.
+     *
+     * @param Content $content
+     *
+     * @return Content
+     */
+    public function index(Content $content)
+    {
+        return $content
+            ->title(trans('admin.permissions'))
+            ->description(trans('admin.list'))
+            ->breadcrumb(
+                ['text' => '系统管理'],
+                ['text' => '权限']
+            )
+            ->body($this->grid());
     }
 
     /**
