@@ -18,22 +18,13 @@ class UserController extends AdminController
     }
 
     /**
-     * Index interface.
+     * Get content breadcrumb.
      *
-     * @param Content $content
-     *
-     * @return Content
+     * @return array
      */
-    public function index(Content $content)
+    protected function breadcrumb()
     {
-        return $content
-            ->title(trans('admin.administrator'))
-            ->description(trans('admin.list'))
-            ->breadcrumb(
-                ['text' => '系统管理'],
-                ['text' => '用户']
-            )
-            ->body($this->grid());
+        return ['text' => '用户'];
     }
 
     /**

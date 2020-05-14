@@ -18,22 +18,13 @@ class LogController extends AdminController
     }
 
     /**
-     * Index interface.
+     * Get content breadcrumb.
      *
-     * @param Content $content
-     *
-     * @return Content
+     * @return array
      */
-    public function index(Content $content)
+    protected function breadcrumb()
     {
-        return $content
-            ->title(trans('admin.operation_log'))
-            ->description(trans('admin.list'))
-            ->breadcrumb(
-                ['text' => '系统管理'],
-                ['text' => '操作记录']
-            )
-            ->body($this->grid());
+        return ['text' => '操作记录'];
     }
 
     /**

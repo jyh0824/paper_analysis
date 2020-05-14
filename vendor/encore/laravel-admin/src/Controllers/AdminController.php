@@ -17,6 +17,13 @@ class AdminController extends Controller
     protected $title = 'Title';
 
     /**
+     * Title for current resource.
+     *
+     * @var string
+     */
+    protected $breadcrumb = ['text' => '系统管理'];
+
+    /**
      * Set description for following 4 action pages.
      *
      * @var array
@@ -39,6 +46,16 @@ class AdminController extends Controller
     }
 
     /**
+     * Get content breadcrumb.
+     *
+     * @return array
+     */
+    protected function breadcrumb()
+    {
+        return $this->breadcrumb;
+    }
+
+    /**
      * Index interface.
      *
      * @param Content $content
@@ -50,6 +67,7 @@ class AdminController extends Controller
         return $content
             ->title($this->title())
             ->description($this->description['index'] ?? trans('admin.list'))
+            ->breadcrumb($this->breadcrumb, $this->breadcrumb())
             ->body($this->grid());
     }
 
@@ -66,6 +84,7 @@ class AdminController extends Controller
         return $content
             ->title($this->title())
             ->description($this->description['show'] ?? trans('admin.show'))
+            ->breadcrumb($this->breadcrumb, $this->breadcrumb(), ['text' => '显示'])
             ->body($this->detail($id));
     }
 
@@ -82,6 +101,7 @@ class AdminController extends Controller
         return $content
             ->title($this->title())
             ->description($this->description['edit'] ?? trans('admin.edit'))
+            ->breadcrumb($this->breadcrumb, $this->breadcrumb(), ['text' => '编辑'])
             ->body($this->form()->edit($id));
     }
 
@@ -97,6 +117,7 @@ class AdminController extends Controller
         return $content
             ->title($this->title())
             ->description($this->description['create'] ?? trans('admin.create'))
+            ->breadcrumb($this->breadcrumb, $this->breadcrumb(), ['text' => '创建'])
             ->body($this->form());
     }
 }

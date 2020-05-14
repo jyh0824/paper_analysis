@@ -52,8 +52,8 @@ class CreatePapaerTables extends Migration
             $table->unsignedInteger('question_id')->comment('题目id');
             $table->unsignedInteger('score_id')->comment('成绩id');
             $table->text('answer')->comment('答案')->nullable();
-            $table->float('score')->comment('得分')->nullable();
-            $table->float('auto_score')->comment('自动评分得分')->nullable();
+            $table->float('score',5,2)->comment('得分')->nullable();
+            $table->float('auto_score',5,2)->comment('自动评分得分')->nullable();
             $table->string('remark', 255)->comment('备注')->nullable();
             $table->timestamps();
         });
@@ -62,13 +62,13 @@ class CreatePapaerTables extends Migration
             $table->increments('id');
             $table->string('username')->comment('学号');
             $table->unsignedInteger('paper_id')->comment('试卷id');
-            $table->float('score')->comment('成绩');
+            $table->float('score',5,2)->comment('成绩');
             $table->string('remark', 255)->comment('备注')->nullable();
             $table->string('selection_answer', 255)->comment('选择题答案')->nullable();
             $table->integer('selection_score')->comment('选择题分数')->nullable();
             $table->string('judgement_answer', 255)->comment('判断题答案')->nullable();
             $table->integer('judgement_score')->comment('判断题分数')->nullable();
-            $table->float('subjective_score')->comment('主观题分数')->nullable();
+            $table->float('subjective_score',5,2)->comment('主观题分数')->nullable();
             $table->timestamps();
         });
         // 用户反馈表
@@ -77,7 +77,7 @@ class CreatePapaerTables extends Migration
             $table->unsignedInteger('uid')->comment('用户id');
             $table->string('content', 255)->comment('内容');
             $table->string('remark', 255)->comment('反馈回复')->nullable();
-            $table->integer('status')->comment('状态');
+            $table->integer('status')->comment('状态')->default(0);
             $table->timestamps();
         });
     }

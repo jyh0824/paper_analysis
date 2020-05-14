@@ -19,22 +19,13 @@ class PermissionController extends AdminController
     }
 
     /**
-     * Index interface.
+     * Get content breadcrumb.
      *
-     * @param Content $content
-     *
-     * @return Content
+     * @return array
      */
-    public function index(Content $content)
+    protected function breadcrumb()
     {
-        return $content
-            ->title(trans('admin.permissions'))
-            ->description(trans('admin.list'))
-            ->breadcrumb(
-                ['text' => '系统管理'],
-                ['text' => '权限']
-            )
-            ->body($this->grid());
+        return ['text' => '权限'];
     }
 
     /**
